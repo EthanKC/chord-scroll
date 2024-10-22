@@ -6,14 +6,19 @@
 
 {% block main %}
     <div class="container">
-        <form action="/new" method="post">
+        <form action="/new" method="post" onsubmit="submitForm()">
             <div class="form-group">
                 <label for="title">Title</label>
                 <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="title" name="title" placeholder="Title" type="text">
             </div>
             <div class="form-group">
-                <label>Text</label>
+                <label for="title">Artist</label>
+                <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="artist" name="artist" placeholder="Artist" type="text">
+            </div>
+            <div class="form-group">
+                <label>Song</label>
                 <div id="editor"></div>
+                <input type="hidden" name="song" id="hiddenInput">
             </div>
             <button type="submit">Save</button>
         </form>
@@ -27,5 +32,10 @@
         const quill = new Quill('#editor', {
         theme: 'snow'
         });
+
+        function submitForm() {
+            var content = quill.root.innerHTML;
+            document.getElementById('hiddenInput').value = content;
+        }
     </script>
 {% endblock %}

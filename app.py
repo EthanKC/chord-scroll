@@ -255,8 +255,27 @@ def forgot_password():
 @login_required
 def new():
     if request.method == "POST":
-        flash("TODO")
+        title = request.form.get("title")
+        artist = request.form.get("artist")
+        song = request.form.get("song")
+
+        # Ensure title was submitted
+        if not title:
+            flash("Title Required")
+            return redirect("/new")
+        
+        # Ensure song was submitted
+        if not song:
+            flash("Song Required")
+            return redirect("/new")
+        
+        if artist:
+            db.execute("INSERT INTO songs (title, artist, song_text, person_id) VALUES(?,?,?,?)", title, artist, song, session["user_id"])
+        else:
+           db.execute("INSERT INTO songs (title, song_text, person_id) VALUES(?,?,?,?)", title, song, session["user_id"]) 
+        
+        flash("Song Saved")
         return redirect("/new")
-    
+
     else:
         return render_template("new.html")
