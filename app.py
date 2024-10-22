@@ -1,0 +1,315 @@
+import os
+
+from cs50 import SQL
+from flask import Flask, flash, redirect, render_template, request, session
+from flask_session import Session
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from helpers import login_required
+
+# Configure application
+app = Flask(__name__)
+app.secret_key = 'gG45agd2fa2dg45df64saf51adf451'
+
+# Configure session to use filestystem (instead of signed cookies)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
+# Configure CS50 Library to use SQLite database
+db = SQL("sqlite:///chord-scroll.db")
+
+
+@app.after_request
+def after_request(response):
+    """Ensure responses aren't cached"""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
+@app.route("/")
+@login_required
+def index():
+    return render_template("index.html")
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Log user in"""
+
+    # Forget any user_id
+    session.pop("user_id", None)
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Ensure username was submitted
+        if not request.form.get("username"):
+            flash("Must Provide Username")
+            return redirect("/login")
+
+        # Ensure password was submitted
+        elif not request.form.get("password"):
+            flash("Must Provide Password")
+            return redirect("/login")
+
+        # Query database for username
+        rows = db.execute(
+            "SELECT * FROM users WHERE username = ?", request.form.get("username")
+        )
+
+        # Ensure username exists and password is correct
+        if len(rows) != 1 or not check_password_hash(
+            rows[0]["hash"], request.form.get("password")
+        ):
+            flash("Invalid Username and/or Password")
+            return redirect("/login")
+
+        # Remember which user has logged in
+        session["user_id"] = rows[0]["id"]
+
+        # Redirect user to home page
+        return redirect("/")
+
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("login.html")
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Register user"""
+
+    # Forget any user_id
+    session.clear()
+
+    username = request.form.get("username")
+    password = request.form.get("password")
+    confirmation = request.form.get("confirmation")
+    questions = db.execute("SELECT * FROM security")
+    question = request.form.get("securityQuestion")
+    answer = request.form.get("securityAnswer")
+
+    if request.method == "POST":
+        # Ensure username was submitted
+        if not username:
+            flash("Must Provide Username")
+            return redirect("/register")
+
+        # Ensure password was submitted
+        elif not password:
+            flash("Must Provide Password")
+            return redirect("/register")
+
+        # Ensure password and confirm password match
+        elif password != confirmation:
+            flash("Passwords Don't Match")
+            return redirect("/register")
+
+        # Validate security question
+        elif not question:
+            flash("Must Choose Question")
+            return redirect("/register")
+
+        # Validate security answer
+        elif not answer:
+            flash("Must provide answer")
+            return redirect("/register")
+
+        else:
+            db.execute("INSERT INTO users (username, hash, security_question, security_answer_hash) VALUES(?, ?, ?, ?)", username, generate_password_hash(password), question, generate_password_hash(answer))
+            flash("Successfully Registered")
+            return redirect("/login")
+    return render_template("register.html", questions=questions)
+
+
+@app.route("/logout")
+def logout():
+    """Log user out"""
+
+    # Forget any user_id
+    session.clear()
+
+    # Redirect user to login form
+    return redirect("/")
+
+
+@app.route("/account")
+@login_required
+def account():
+    """Account info"""
+    username = db.execute("SELECT username FROM users WHERE id = ?", session["user_id"])
+    username = username[0]["username"]
+
+    return render_template("account.html", username=username)
+
+
+@app.route("/password_reset", methods=["GET", "POST"])
+def password_reset():
+    """Reset password"""
+    if request.method == "POST":
+        oldPassword = request.form.get("oldPassword")
+        newPassword = request.form.get("password")
+        confirmation = request.form.get("confirmation")
+
+        # Validate entries
+        if not oldPassword:
+            flash("Old Password Required")
+            return redirect("/password_reset")
+
+        elif not newPassword:
+            flash("New Password Required")
+            return redirect("/password_reset")
+
+        elif not confirmation:
+            flash("Confirm Password Required")
+            return redirect("/password_reset")
+
+        # Query database for user
+        rows = db.execute("SELECT * FROM users WHERE id = ?", session["user_id"])
+
+        # Ensure oldPassword is correct
+        if not check_password_hash(rows[0]["hash"], request.form.get("oldPassword")):
+            flash("Invalid Password")
+            return redirect("/password_reset")
+
+        # Ensure newPassword and confirmation match
+        elif newPassword != confirmation:
+            flash("New Password Mismatch")
+            return redirect("/password_reset")
+
+        db.execute("UPDATE users SET hash = ? WHERE id = ?", generate_password_hash(newPassword), session["user_id"])
+        flash("Password Updated")
+        return redirect("/account")
+
+    return render_template("password_reset.html")
+
+
+@app.route("/forgot_password_u", methods=["GET", "POST"])
+def forgot_password_u():
+    if request.method == "POST":
+        username = request.form.get("username")
+        if not username:
+            flash("Missing Username")
+            return redirect("/forgot_password_u")
+        user = db.execute("SELECT id FROM users WHERE username = ?", username)
+        if not user:
+            flash("User Not Found")
+            return redirect("/forgot_password_u")
+        questionID = db.execute("SELECT security_question FROM users WHERE id = ?", user[0]["id"])
+        question = db.execute("SELECT question FROM security WHERE id = ?", questionID[0]["security_question"])
+        question = question[0]["question"]
+        session["temp_user_id"] = user[0]["id"]
+
+        return render_template("forgot_password.html", question=question)
+
+    return render_template("forgot_password_username.html")
+
+
+@app.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+    """Reset password"""
+    if request.method == "POST":
+        answer = request.form.get("answer")
+        newPassword = request.form.get("password")
+        confirmation = request.form.get("confirmation")
+
+        # Validate entries
+        if not answer:
+            flash("Security Answer Required")
+            return redirect("/forgot_password")
+
+        elif not newPassword:
+            flash("New Password Required")
+            return redirect("/forgot_password")
+
+        elif not confirmation:
+            flash("Confirm Password Required")
+            return redirect("/forgot_password")
+
+        # Query database for user
+        rows = db.execute("SELECT * FROM users WHERE id = ?", session["temp_user_id"])
+
+        # Ensure oldPassword is correct
+        if not check_password_hash(rows[0]["security_answer_hash"], answer):
+            flash("Invalid Answer")
+            return redirect("/forgot_password")
+
+        # Ensure newPassword and confirmation match
+        elif newPassword != confirmation:
+            flash("New Password Mismatch")
+            return redirect("/forgot_password")
+
+        db.execute("UPDATE users SET hash = ? WHERE id = ?", generate_password_hash(newPassword), session["temp_user_id"])
+
+        flash("Password Successfully Reset")
+        return redirect("/login")
+
+    return render_template("forgot_password_username.html")
+
+@app.route("/new_pattern", methods=["GET","POST"])
+@login_required
+def canvas():
+    if request.method == "POST":
+        patternName = request.form.get("patternName")
+        if not patternName:
+            flash("Enter Pattern Name")
+            return redirect("/new_pattern")
+        
+        fabricCount = request.form.get("fabricCount")
+        try:
+            fabricCount = int(fabricCount)
+        except:
+            flash("Fabric Count Must Be a Positive Integer")
+            return redirect("/new_pattern")
+        try:
+            if fabricCount <= 0:
+                flash("Fabric Count Must Be a Positive Integer")
+                return redirect("/new_pattern")
+        except:
+            flash("Fabric Count Must Be a Positive Integer")
+            return redirect("/new_pattern")            
+
+
+        patternWidth = request.form.get("patternWidth")
+        if not patternWidth:
+            flash("Enter Pattern Width")
+            return redirect("/new_pattern")
+        try:
+            patternWidth = int(patternWidth)
+        except:
+            flash("Pattern Width Must Be a Positive Integer")
+            return redirect("/new_pattern")
+        try:
+            if patternWidth <= 0:
+                flash("Pattern Width Must Be a Positive Integer")
+                return redirect("/new_pattern")
+        except:
+            flash("Pattern Width Must Be a Positive Integer")
+            return redirect("/new_pattern")               
+
+
+        patternHeight = request.form.get("patternHeight")
+        if not patternHeight:
+            flash("Enter Pattern Height")
+            return redirect("/new_pattern")
+        try:
+            patternHeight = int(patternHeight)
+        except:
+            flash("Pattern Height Must Be a Positive Integer")
+            return redirect("/new_pattern")
+        try:
+            if patternHeight <= 0:
+                flash("Pattern Height Must Be a Positive Integer")
+                return redirect("/new_pattern")
+        except:
+            flash("Pattern Height Must Be a Positive Integer")
+            return redirect("/new_pattern")     
+
+        return render_template("canvas.html", patternName=patternName, fabricCount=fabricCount, patternWidth=patternWidth, patternHeight=patternHeight)
+    else:
+        return render_template("new_pattern.html")
