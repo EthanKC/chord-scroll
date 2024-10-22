@@ -279,3 +279,13 @@ def new():
 
     else:
         return render_template("new.html")
+
+@app.route("/library", methods=["GET","POST"])
+@login_required
+def library():
+    if request.method == "POST":
+        flash("TODO")
+        return render_template("library.html")
+
+    else:
+        return render_template("library.html") 
