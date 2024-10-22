@@ -251,65 +251,12 @@ def forgot_password():
 
     return render_template("forgot_password_username.html")
 
-@app.route("/new_pattern", methods=["GET","POST"])
+@app.route("/new", methods=["GET","POST"])
 @login_required
-def canvas():
+def new():
     if request.method == "POST":
-        patternName = request.form.get("patternName")
-        if not patternName:
-            flash("Enter Pattern Name")
-            return redirect("/new_pattern")
-        
-        fabricCount = request.form.get("fabricCount")
-        try:
-            fabricCount = int(fabricCount)
-        except:
-            flash("Fabric Count Must Be a Positive Integer")
-            return redirect("/new_pattern")
-        try:
-            if fabricCount <= 0:
-                flash("Fabric Count Must Be a Positive Integer")
-                return redirect("/new_pattern")
-        except:
-            flash("Fabric Count Must Be a Positive Integer")
-            return redirect("/new_pattern")            
-
-
-        patternWidth = request.form.get("patternWidth")
-        if not patternWidth:
-            flash("Enter Pattern Width")
-            return redirect("/new_pattern")
-        try:
-            patternWidth = int(patternWidth)
-        except:
-            flash("Pattern Width Must Be a Positive Integer")
-            return redirect("/new_pattern")
-        try:
-            if patternWidth <= 0:
-                flash("Pattern Width Must Be a Positive Integer")
-                return redirect("/new_pattern")
-        except:
-            flash("Pattern Width Must Be a Positive Integer")
-            return redirect("/new_pattern")               
-
-
-        patternHeight = request.form.get("patternHeight")
-        if not patternHeight:
-            flash("Enter Pattern Height")
-            return redirect("/new_pattern")
-        try:
-            patternHeight = int(patternHeight)
-        except:
-            flash("Pattern Height Must Be a Positive Integer")
-            return redirect("/new_pattern")
-        try:
-            if patternHeight <= 0:
-                flash("Pattern Height Must Be a Positive Integer")
-                return redirect("/new_pattern")
-        except:
-            flash("Pattern Height Must Be a Positive Integer")
-            return redirect("/new_pattern")     
-
-        return render_template("canvas.html", patternName=patternName, fabricCount=fabricCount, patternWidth=patternWidth, patternHeight=patternHeight)
+        flash("TODO")
+        return redirect("/new")
+    
     else:
-        return render_template("new_pattern.html")
+        return render_template("new.html")
