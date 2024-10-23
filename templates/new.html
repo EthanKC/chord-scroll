@@ -52,7 +52,7 @@
         });
 
         function submitForm() {
-            var content = quill.root.innerHTML;
+            var content = quill.root.innerHTML.replace(/ /g, '&nbsp;');
             document.getElementById('hiddenInput').value = content;
         }
     </script>
