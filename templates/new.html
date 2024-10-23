@@ -12,8 +12,26 @@
                 <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="title" name="title" placeholder="Title" type="text">
             </div>
             <div class="form-group">
-                <label for="title">Artist</label>
+                <label for="artist">Artist</label>
                 <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="artist" name="artist" placeholder="Artist" type="text">
+            </div>
+            <div class="form-group">
+                <label for="genre">Genre</label>
+                <select id="genre" name="genre">
+                    <option disabled selected value="">Genre</option>
+                    {% for genre in genres %}
+                        <option value="{{ genre.id }}">{{ genre.genre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="type">Type</label>
+                <select id="type" name="type">
+                    <option disabled selected value="">Type</option>
+                    {% for type in types %}
+                        <option value="{{ type.id }}">{{ type.type }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="form-group">
                 <label>Song</label>

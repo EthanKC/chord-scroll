@@ -258,6 +258,8 @@ def new():
         title = request.form.get("title")
         artist = request.form.get("artist")
         song = request.form.get("song")
+        typeID = request.form.get("type")
+        genreID = request.form.get("genre")
 
         # Ensure title was submitted
         if not title:
@@ -269,16 +271,40 @@ def new():
             flash("Song Required")
             return redirect("/new")
         
+        # Ensure type was submitted
+        if not typeID:
+            flash("Type Required")
+            return redirect("/new")
+
+        # Ensure valid type was submitted
+        typeCheck = db.execute("SELECT id FROM type WHERE id = ?", typeID)
+        if not typeCheck:
+            flash("Invalid Type")
+            return redirect("/new")
+            
+        # Ensure genre was submitted
+        if not genreID:
+            flash("Genre Required")
+            return redirect("/new")
+
+        # Ensure valid genre was submitted
+        genreCheck = db.execute("SELECT id FROM genre WHERE id = ?", genreID)
+        if not genreCheck:
+            flash("Invalid Genre")
+            return redirect("/new")
+
         if artist:
-            db.execute("INSERT INTO songs (title, artist, song_text, person_id) VALUES(?,?,?,?)", title, artist, song, session["user_id"])
+            db.execute("INSERT INTO songs (title, artist, song_text, type_id, genre_id, user_id) VALUES(?,?,?,?,?,?)", title, artist, song, typeID, genreID, session["user_id"])
         else:
-           db.execute("INSERT INTO songs (title, song_text, person_id) VALUES(?,?,?,?)", title, song, session["user_id"]) 
+           db.execute("INSERT INTO songs (title, song_text, type_id, genre_id, user_id) VALUES(?,?,?,?,?)", title, song, typeID, genreID, session["user_id"])
         
         flash("Song Saved")
         return redirect("/new")
 
     else:
-        return render_template("new.html")
+        genres = db.execute("SELECT * FROM genre")
+        types = db.execute("SELECT * FROM type")
+        return render_template("new.html", genres=genres, types=types)
 
 @app.route("/library", methods=["GET","POST"])
 @login_required
@@ -288,4 +314,5 @@ def library():
         return render_template("library.html")
 
     else:
-        return render_template("library.html") 
+        songs = db.execute("SELECT s.title, s.artist, t.type, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"])
+        return render_template("library.html", songs=songs) 
