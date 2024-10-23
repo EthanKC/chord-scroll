@@ -311,8 +311,16 @@ def new():
 def library():
     if request.method == "POST":
         flash("TODO")
-        return render_template("library.html")
+        return redirect("/library")
 
     else:
-        songs = db.execute("SELECT s.title, s.artist, t.type, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"])
+        songs = db.execute("SELECT s.title, s.id, s.artist, t.type, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"])
         return render_template("library.html", songs=songs) 
+    
+@app.route("/song/<title>_<int:id>", methods=["GET"])
+@login_required
+def song(title, id):
+    song = db.execute("SELECT s.title, s.artist, s.song_text, t.type, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND s.id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"], id)
+    if song:
+        song = song[0]
+    return render_template("song.html", song=song)

@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {{ song.title }}
+{% endblock %}
+
+{% block main %}
+    <div name="details">
+        <h1>{{ song.title }}</h1>
+        <h3>{{ song.artist }}</h3>
+        <h6>{{ song.genre }} - {{ song.type }}</h6>
+    </div>
+    <div class="mt-5" name="song">
+        <p>{{ song.song_text | safe }}</p>
+    </div>
+{% endblock %}
