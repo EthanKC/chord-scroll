@@ -13,6 +13,10 @@
     <form action="/song/{{ song.title }}_{{ song.id }}/edit">
         <button name="edit" class="btn btn-primary">Edit</button>
     </form>
+    <form action="/delete" method="post">
+        <input name="id" type="hidden" value="{{ song.id }}">
+        <button name="delete" class="btn btn-primary">Delete</button>
+    </form>
     <div class="mt-5" name="song" style="text-align: initial;">
         <p>{{ song.song_text | safe }}</p>
     </div>

@@ -373,9 +373,9 @@ def edit(title, id):
             return redirect(redir)
 
         if artist:
-            db.execute("UPDATE songs SET title=?, artist=?, song_text=?, type_id=?, genre_id=?, user_id=? WHERE id =?", title, artist, song, typeID, genreID, session["user_id"], id)
+            db.execute("UPDATE songs SET title=?, artist=?, song_text=?, type_id=?, genre_id=? WHERE id =? AND user_id =?", title, artist, song, typeID, genreID, id, session["user_id"])
         else:
-           db.execute("UPDATE songs SET title=?, artist=?, song_text=?, type_id=?, genre_id=?, user_id=? WHERE id =?", title, "No Artist", song, typeID, genreID, session["user_id"], id)
+           db.execute("UPDATE songs SET title=?, artist=?, song_text=?, type_id=?, genre_id=? WHERE id =? AND user_id =?", title, "No Artist", song, typeID, genreID, id, session["user_id"])
         
         flash("Song Saved")
         return redirect(f"/song/{title}_{id}")
@@ -389,3 +389,15 @@ def edit(title, id):
             return render_template("edit.html", song=song, genres=genres, types=types)
         else:
             return error("Song Not Found", "404")
+        
+@app.route("/delete", methods=["POST"])
+@login_required
+def delete():
+    id = request.form.get("id")
+    if id:
+        db.execute("DELETE FROM songs WHERE id = ? AND user_id = ?", id, session["user_id"])
+        flash("Song Deleted")
+        return redirect("/library")
+    else:
+        flash("Error: id not found on song table")
+        return redirect("/library")
