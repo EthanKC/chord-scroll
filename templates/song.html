@@ -10,6 +10,9 @@
         <h3>{{ song.artist }}</h3>
         <h6>{{ song.genre }} - {{ song.type }}</h6>
     </div>
+    <form action="/song/{{ song.title }}_{{ song.id }}/edit">
+        <button name="edit" class="btn btn-primary">Edit</button>
+    </form>
     <div class="mt-5" name="song" style="text-align: initial;">
         <p>{{ song.song_text | safe }}</p>
     </div>
