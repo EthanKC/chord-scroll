@@ -266,9 +266,15 @@ def new():
             flash("Title Required")
             return redirect("/new")
         
-        # Ensure song was submitted
-        if not song:
-            flash("Song Required")
+        # Ensure genre was submitted
+        if not genreID:
+            flash("Genre Required")
+            return redirect("/new")
+
+        # Ensure valid genre was submitted
+        genreCheck = db.execute("SELECT id FROM genre WHERE id = ?", genreID)
+        if not genreCheck:
+            flash("Invalid Genre")
             return redirect("/new")
         
         # Ensure type was submitted
@@ -281,16 +287,10 @@ def new():
         if not typeCheck:
             flash("Invalid Type")
             return redirect("/new")
-            
-        # Ensure genre was submitted
-        if not genreID:
-            flash("Genre Required")
-            return redirect("/new")
-
-        # Ensure valid genre was submitted
-        genreCheck = db.execute("SELECT id FROM genre WHERE id = ?", genreID)
-        if not genreCheck:
-            flash("Invalid Genre")
+        
+        # Ensure song was submitted
+        if not song:
+            flash("Song Required")
             return redirect("/new")
 
         if artist:
@@ -331,57 +331,61 @@ def song(title, id):
 @login_required
 def edit(title, id):
     if request.method == "POST":
-        title = request.form.get("title")
+        songTitle = request.form.get("title")
         artist = request.form.get("artist")
         song = request.form.get("song")
         songID = request.form.get("id")
         typeID = request.form.get("type")
         genreID = request.form.get("genre")
+        redir = f"/song/{title}_{id}/edit"
 
         # Ensure title was submitted
-        if not title:
+        if not songTitle:
             flash("Title Required")
-            return redirect("/new")
+            return redirect(redir)
         
-        # Ensure song was submitted
-        if not song:
-            flash("Song Required")
-            return redirect("/new")
         
-        # Ensure type was submitted
-        if not typeID:
-            flash("Type Required")
-            return redirect("/new")
-
-        # Ensure valid type was submitted
-        typeCheck = db.execute("SELECT id FROM type WHERE id = ?", typeID)
-        if not typeCheck:
-            flash("Invalid Type")
-            return redirect("/new")
-            
         # Ensure genre was submitted
         if not genreID:
             flash("Genre Required")
-            return redirect("/new")
+            return redirect(redir)
 
         # Ensure valid genre was submitted
         genreCheck = db.execute("SELECT id FROM genre WHERE id = ?", genreID)
         if not genreCheck:
             flash("Invalid Genre")
-            return redirect("/new")
+            return redirect(redir)
+        
+        # Ensure type was submitted
+        if not typeID:
+            flash("Type Required")
+            return redirect(redir)
+
+        # Ensure valid type was submitted
+        typeCheck = db.execute("SELECT id FROM type WHERE id = ?", typeID)
+        if not typeCheck:
+            flash("Invalid Type")
+            return redirect(redir)
+        
+        # Ensure song was submitted
+        if not song:
+            flash("Song Required")
+            return redirect(redir)
 
         if artist:
-            db.execute("UPDATE songs SET title=?, artist=?, song_text=? type_id=? genre_id=? user_id=? WHERE id =?", title, artist, song, typeID, genreID, session["user_id"], id)
+            db.execute("UPDATE songs SET title=?, artist=?, song_text=?, type_id=?, genre_id=?, user_id=? WHERE id =?", title, artist, song, typeID, genreID, session["user_id"], id)
         else:
-           db.execute("UPDATE songs SET title=?, song_text=? type_id=? genre_id=? user_id=? WHERE id =?", title, song, typeID, genreID, session["user_id"], id)
+           db.execute("UPDATE songs SET title=?, artist=?, song_text=?, type_id=?, genre_id=?, user_id=? WHERE id =?", title, "No Artist", song, typeID, genreID, session["user_id"], id)
         
         flash("Song Saved")
-        return redirect("/new")
+        return redirect(f"/song/{title}_{id}")
 
     else:
-        song = db.execute("SELECT s.id, s.title, s.artist, s.song_text, t.type, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND s.id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"], id)
+        song = db.execute("SELECT s.id, s.title, s.artist, s.song_text, s.type_id, t.type, s.genre_id, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND s.id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"], id)
         if song:
             song = song[0]
-            return render_template("edit.html", song=song)
+            genres = db.execute("SELECT * FROM genre")
+            types = db.execute("SELECT * FROM type")
+            return render_template("edit.html", song=song, genres=genres, types=types)
         else:
             return error("Song Not Found", "404")
