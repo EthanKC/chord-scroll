@@ -17,7 +17,31 @@
         <input name="id" type="hidden" value="{{ song.id }}">
         <button name="delete" class="btn btn-primary">Delete</button>
     </form>
-    <div class="mt-5" name="song" style="text-align: initial;">
+    <form class="form-group">
+        <label for="scrollSpeed">Scroll Speed</label>
+        <input class="form-control mx-auto w-auto" id="scrollSpeed" name="scrollSpeed" type="number" min="1" value="5">
+    </form>
+    <button name="scroll" class="btn btn-primary">Scroll</button>
+    <div class="mt-5" name="song" id="song" style="text-align: initial;">
         <p>{{ song.song_text | safe }}</p>
     </div>
+
+    <script>
+        const song = document.getElementById("song");
+        var h = document.documentElement.scrollHeight - window.innerHeight;
+
+        function scroll() {
+            var scrollSpeed = document.getElementById("scrollSpeed");
+            scrollSpeed = scrollSpeed.valueAsNumber;
+            window.scrollBy(0,scrollSpeed)
+            globalID = requestAnimationFrame(scroll);
+        }
+
+        window.addEventListener("scroll", function() {
+            if (window.pageYOffset >= h) {
+                cancelAnimationFrame(globalID);
+            }
+        });
+        document.querySelector('button[name="scroll"]').addEventListener("click", scroll)
+    </script>
 {% endblock %}
