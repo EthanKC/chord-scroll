@@ -22,6 +22,7 @@
         <input class="form-control mx-auto w-auto" id="scrollSpeed" name="scrollSpeed" type="number" min="1" value="5">
     </form>
     <button name="scroll" class="btn btn-primary">Scroll</button>
+    <button name="stop" class="btn btn-primary">Stop</button>
     <div class="mt-5" name="song" id="song" style="text-align: initial;">
         <p>{{ song.song_text | safe }}</p>
     </div>
@@ -30,6 +31,14 @@
         const song = document.getElementById("song");
         var h = document.documentElement.scrollHeight - window.innerHeight;
 
+        document.querySelector('button[name="scroll"]').addEventListener("click", scroll)
+        document.querySelector('button[name="stop"]').addEventListener("click", stopScroll)
+        window.addEventListener("scroll", function() {
+            if (window.pageYOffset >= h) {
+                stopScroll();
+            };
+        });
+
         function scroll() {
             var scrollSpeed = document.getElementById("scrollSpeed");
             scrollSpeed = scrollSpeed.valueAsNumber;
@@ -37,11 +46,10 @@
             globalID = requestAnimationFrame(scroll);
         }
 
-        window.addEventListener("scroll", function() {
-            if (window.pageYOffset >= h) {
+        function stopScroll() {
+             {
                 cancelAnimationFrame(globalID);
-            }
-        });
-        document.querySelector('button[name="scroll"]').addEventListener("click", scroll)
+            };
+        };
     </script>
 {% endblock %}
