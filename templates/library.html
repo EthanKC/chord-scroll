@@ -7,7 +7,13 @@
 {% block main %}
 
     <div>
-        <table class="table">
+        <table> 
+                <td><input type="text" id="titleFilter" onkeyup="filter('titleFilter',0)" placeholder="Filter by title..."></td>
+                <td><input type="text" id="artistFilter" onkeyup="filter('artistFilter', 1)" placeholder="Filter by artist..."></td>
+                <td><input type="text" id="genreFilter" onkeyup="filter('genreFilter', 2)" placeholder="Filter by genre..."></td>
+                <td><input type="text" id="typeFilter" onkeyup="filter('typeFilter', 3)" placeholder="Filter by type..."></td>
+        </table>
+        <table class="table" id="songTable">
             <thead>
                 <tr>
                     <th>Title</th>
@@ -21,10 +27,10 @@
             <tbody>
                 {% for song in songs %}
                     <tr>
-                        <td><a href="/song/{{ song.title }}_{{ song.id }}">{{ song.title }}</a></td>
-                        <td>{{ song.artist }}</td>
-                        <td>{{ song.genre }}</td>
-                        <td>{{ song.type }}</td>
+                        <td name="title"><a href="/song/{{ song.title }}_{{ song.id }}">{{ song.title }}</a></td>
+                        <td name="artist">{{ song.artist }}</td>
+                        <td name="genre">{{ song.genre }}</td>
+                        <td name="type">{{ song.type }}</td>
                         <td>
                             <form action="/song/{{ song.title }}_{{ song.id }}/edit">
                                 <button name="edit" class="btn btn-primary">Edit</button>
@@ -41,4 +47,25 @@
             </tbody>
         </table>
     </div>
+
+    <script>
+        function filter(elementId, index) {
+            var input = document.getElementById(elementId);
+            var filter = input.value.toUpperCase();
+            var table = document.getElementById("songTable");
+            var tr = table.getElementsByTagName("tr");
+
+            for (var i = 0; i < tr.length; i++) {
+                var td = tr[i].getElementsByTagName("td")[index];
+                if (td) {
+                    var txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
 {% endblock %}
