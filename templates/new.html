@@ -17,7 +17,7 @@
             </div>
             <div class="form-group">
                 <label for="genre">Genre</label>
-                <select id="genre" name="genre">
+                <select class="form-select mx-auto w-auto" id="genre" name="genre">
                     <option disabled selected value="">Genre</option>
                     {% for genre in genres %}
                         <option value="{{ genre.id }}">{{ genre.genre }}</option>
@@ -26,7 +26,7 @@
             </div>
             <div class="form-group">
                 <label for="type">Type</label>
-                <select id="type" name="type">
+                <select class="form-select mx-auto w-auto" id="type" name="type">
                     <option disabled selected value="">Type</option>
                     {% for type in types %}
                         <option value="{{ type.id }}">{{ type.type }}</option>
@@ -38,7 +38,7 @@
                 <div id="editor"></div>
                 <input type="hidden" name="song" id="hiddenInput">
             </div>
-            <button type="submit">Save</button>
+            <button class="btn btn-primary mt-2" type="submit">Save</button>
         </form>
     </div>
 

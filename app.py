@@ -32,7 +32,8 @@ def after_request(response):
 @app.route("/")
 @login_required
 def index():
-    return render_template("index.html")
+    songs = db.execute("SELECT s.title, s.id, s.artist, t.type, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"])
+    return render_template("index.html", songs=songs) 
 
 if __name__ == "__main__":
     app.run(debug=True)
@@ -306,17 +307,6 @@ def new():
         types = db.execute("SELECT * FROM type")
         return render_template("new.html", genres=genres, types=types)
 
-@app.route("/library", methods=["GET","POST"])
-@login_required
-def library():
-    if request.method == "POST":
-        flash("TODO")
-        return redirect("/library")
-
-    else:
-        songs = db.execute("SELECT s.title, s.id, s.artist, t.type, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"])
-        return render_template("library.html", songs=songs) 
-    
 @app.route("/song/<title>_<int:id>", methods=["GET"])
 @login_required
 def song(title, id):
@@ -397,7 +387,7 @@ def delete():
     if id:
         db.execute("DELETE FROM songs WHERE id = ? AND user_id = ?", id, session["user_id"])
         flash("Song Deleted")
-        return redirect("/library")
+        return redirect("/")
     else:
         flash("Error: id not found on song table")
-        return redirect("/library")
+        return redirect("/")

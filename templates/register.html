@@ -16,7 +16,7 @@
         <input class="form-control mx-auto w-auto" name="confirmation" placeholder="Confirm Password" type="password">
     </div>
     <div>
-        <select name="securityQuestion" style="margin-bottom: 10px;">
+        <select class="form-select mx-auto w-auto" name="securityQuestion" style="margin-bottom: 10px;">
             <option disabled selected value="">Security Question</option>
             {% for question in questions %}
                 <option value="{{ question.id }}"> {{ question.question }}
