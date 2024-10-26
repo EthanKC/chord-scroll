@@ -32,6 +32,8 @@ def after_request(response):
 @app.route("/")
 @login_required
 def index():
+    """Display saved songs"""
+    # Query database for all songs saved by user
     songs = db.execute("SELECT s.title, s.id, s.artist, t.type, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"])
     return render_template("index.html", songs=songs) 
 
@@ -143,6 +145,7 @@ def logout():
 @login_required
 def account():
     """Account info"""
+
     username = db.execute("SELECT username FROM users WHERE id = ?", session["user_id"])
     username = username[0]["username"]
 
@@ -152,6 +155,7 @@ def account():
 @app.route("/password_reset", methods=["GET", "POST"])
 def password_reset():
     """Reset password"""
+
     if request.method == "POST":
         oldPassword = request.form.get("oldPassword")
         newPassword = request.form.get("password")
@@ -183,6 +187,7 @@ def password_reset():
             flash("New Password Mismatch")
             return redirect("/password_reset")
 
+        # Update database with new password
         db.execute("UPDATE users SET hash = ? WHERE id = ?", generate_password_hash(newPassword), session["user_id"])
         flash("Password Updated")
         return redirect("/account")
@@ -192,15 +197,23 @@ def password_reset():
 
 @app.route("/forgot_password_u", methods=["GET", "POST"])
 def forgot_password_u():
+    """Forgot Password - Prep for Reset"""
+
     if request.method == "POST":
         username = request.form.get("username")
+
+        # Ensure username was entered
         if not username:
             flash("Missing Username")
             return redirect("/forgot_password_u")
+        
+        # Validate username exists in database
         user = db.execute("SELECT id FROM users WHERE username = ?", username)
         if not user:
             flash("User Not Found")
             return redirect("/forgot_password_u")
+        
+        # Query database for users chosen security question
         questionID = db.execute("SELECT security_question FROM users WHERE id = ?", user[0]["id"])
         question = db.execute("SELECT question FROM security WHERE id = ?", questionID[0]["security_question"])
         question = question[0]["question"]
@@ -213,7 +226,8 @@ def forgot_password_u():
 
 @app.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
-    """Reset password"""
+    """Forgot Password - Reset Password"""
+
     if request.method == "POST":
         answer = request.form.get("answer")
         newPassword = request.form.get("password")
@@ -235,7 +249,7 @@ def forgot_password():
         # Query database for user
         rows = db.execute("SELECT * FROM users WHERE id = ?", session["temp_user_id"])
 
-        # Ensure oldPassword is correct
+        # Ensure answer to security question is correct
         if not check_password_hash(rows[0]["security_answer_hash"], answer):
             flash("Invalid Answer")
             return redirect("/forgot_password")
@@ -245,6 +259,7 @@ def forgot_password():
             flash("New Password Mismatch")
             return redirect("/forgot_password")
 
+        # Update database with new password
         db.execute("UPDATE users SET hash = ? WHERE id = ?", generate_password_hash(newPassword), session["temp_user_id"])
 
         flash("Password Successfully Reset")
@@ -255,6 +270,8 @@ def forgot_password():
 @app.route("/new", methods=["GET","POST"])
 @login_required
 def new():
+    """Input New Song"""
+
     if request.method == "POST":
         title = request.form.get("title")
         artist = request.form.get("artist")
@@ -294,6 +311,7 @@ def new():
             flash("Song Required")
             return redirect("/new")
 
+        # Input new song into database
         if artist:
             db.execute("INSERT INTO songs (title, artist, song_text, type_id, genre_id, user_id) VALUES(?,?,?,?,?,?)", title, artist, song, typeID, genreID, session["user_id"])
         else:
@@ -303,6 +321,8 @@ def new():
         return redirect("/new")
 
     else:
+
+        # Query database for genre and type options
         genres = db.execute("SELECT * FROM genre")
         types = db.execute("SELECT * FROM type")
         return render_template("new.html", genres=genres, types=types)
@@ -310,7 +330,12 @@ def new():
 @app.route("/song/<title>_<int:id>", methods=["GET"])
 @login_required
 def song(title, id):
+    """Display song"""
+
+    # Query database for saved song
     song = db.execute("SELECT s.id, s.title, s.artist, s.song_text, t.type, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND s.id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"], id)
+
+    # Validate and display song
     if song:
         song = song[0]
         return render_template("song.html", song=song)
@@ -320,6 +345,8 @@ def song(title, id):
 @app.route("/song/<title>_<int:id>/edit", methods=["GET","POST"])
 @login_required
 def edit(title, id):
+    """Edit song"""
+
     if request.method == "POST":
         songTitle = request.form.get("title")
         artist = request.form.get("artist")
@@ -333,7 +360,6 @@ def edit(title, id):
         if not songTitle:
             flash("Title Required")
             return redirect(redir)
-        
         
         # Ensure genre was submitted
         if not genreID:
@@ -362,6 +388,7 @@ def edit(title, id):
             flash("Song Required")
             return redirect(redir)
 
+        # Update existing song in database
         if artist:
             db.execute("UPDATE songs SET title=?, artist=?, song_text=?, type_id=?, genre_id=? WHERE id =? AND user_id =?", title, artist, song, typeID, genreID, id, session["user_id"])
         else:
@@ -371,6 +398,8 @@ def edit(title, id):
         return redirect(f"/song/{title}_{id}")
 
     else:
+
+        # Query database for existing song information to display
         song = db.execute("SELECT s.id, s.title, s.artist, s.song_text, s.type_id, t.type, s.genre_id, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND s.id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"], id)
         if song:
             song = song[0]
@@ -383,7 +412,11 @@ def edit(title, id):
 @app.route("/delete", methods=["POST"])
 @login_required
 def delete():
+    """Delete song"""
+
     id = request.form.get("id")
+
+    # Validate song exists and delete song
     if id:
         db.execute("DELETE FROM songs WHERE id = ? AND user_id = ?", id, session["user_id"])
         flash("Song Deleted")

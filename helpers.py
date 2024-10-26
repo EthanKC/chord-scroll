@@ -18,4 +18,5 @@ def login_required(f):
 
 
 def error(message, code=400):
+    """Error Page"""
     return render_template("error.html",code=code, message=message)
