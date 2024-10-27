@@ -43,7 +43,7 @@ The **"/new"** route is what lets the user add new songs to their library. It ta
 If the get method is used, it queries the genre table to set the _genres_ variable, and queries the types table to set the _types_ variable. It then renders [new.html](#new.html) and passes _genres_ and _types_. 
 If the post method is used, it starts by collecting variables from the form in [new.html](#new.html). It then validates that each field (except for artist) is populated. It also queries the genre and type tables in the database to validate that the selections for those fields in the form exist on the tables in the database. If all of the validation passes, it updates the database with the new song. If the artist field was populated, it populates the given artist. If it isn't populated, it leaves that blank, which causes the database to populate artist as the default value "No Artist". 
 
-
+The **"/song/<title>_\<int:id>"** route supports the get method. It starts by querying the database for song id, title, artist, song_text, type, and genre using the session user id, and the song id from the url. It sets the results of that query to variable _song_. It then validates that a song was found. If one was found, it renders the [song.html](#song.html) and passes _song_. If a song isn't found in the database, it calls the error() function from [helpers.py](#helpers.py) to display an error page saying "Song Not Found". 
 
 ### [helpers.py](helpers.py)
 
