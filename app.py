@@ -153,6 +153,7 @@ def account():
 
 
 @app.route("/password_reset", methods=["GET", "POST"])
+@login_required
 def password_reset():
     """Reset password"""
 
