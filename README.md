@@ -78,5 +78,9 @@ The _sqlite\_sequence_ table is one that sqlite creates automatically if any of 
 
 This is my primary CSS file. I used bootstrap for most of my styling, as well as some inline styling here and there, so there's not a lot in style.css. It starts by setting the scroll-behavior for _html_ (so every page on the web app) to smooth. This is important for the auto-scroll functionality on the [song.html](#songhtml) page. The only other selector is for the class _scroll-buttons_. This class is set to position: sticky, top: 100px, width: max-content, and margin-left: auto. This is all to style the auto scroll buttons on the [song.html](#songhtml) page. 
 
+### [layout.html](templates/layout.html)
 
+This file contains the html boilerplate and navbar that is needed for every html file in the web app. Instead of copying and pasting this code to each file, I've created this layout file, and then use Jinja to extend this file on each other html file, and Jinja blocks to set placeholders which get populated in each individual html file. 
+
+### [account.html](templates/account.html)
 
