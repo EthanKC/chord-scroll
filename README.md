@@ -82,5 +82,18 @@ This is my primary CSS file. I used bootstrap for most of my styling, as well as
 
 This file contains the html boilerplate and navbar that is needed for every html file in the web app. Instead of copying and pasting this code to each file, I've created this layout file, and then use Jinja to extend this file on each other html file, and Jinja blocks to set placeholders which get populated in each individual html file. 
 
+It starts with with the head element, in which are some meta tags to make the site mobile responsive. Specifically, these are required for bootstraps responsiveness to work. 
+Next, I link to the [Bootstraps stylesheet](https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH) and the [Bootstrap javascript file](https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz), both of which you can find more information on at https://getbootstrap.com/. Then I link to the [Quill Realtime Editor style sheet](https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css) (find more info about Quill at https://quilljs.com/), and finally my own [style.css](#stylecss).
+The final thing in the head is the title element, which lists the title as "ChordScroll: {% block title %}{% endblock %}. This sets what will show as the page title on the tabs, and the jinja block allows each page to show a different title. 
+
+After the head element is the body element. It starts with creating the navbar. I copied this from [CS50 Finance problem set](https://www.cs50.harvard.edu/x/2024/psets/9/finance/), then adjusted it to fit my needs for this site. First, the word "ChordScroll" is set as a link to **"/"**. This acts as a sort of icon for the site, and functionally when pressed takes you to the home page. It is located to the far left on the navbar. 
+
+The rest of the navbar elements determine the rest of the links in the navbar. It uses jinja to create an if loop that says if there is a session user_id (meaning a user is logged in), display one set of links. If there isn't a session user_id (meaning a user isn't logged in) display a different set of links. These links are all built as unordered lists, with each entry in the list being a link. 
+
+If there is a session user_id, the first unordered list contains two links: "Home" and "New". This list has bootstrap class me-auto, which sets the margin to the end of the list, functionally setting the elements to the start of the container. This results in "Home" being directly to the right of "ChordScroll" on the far left of the navbar, and "New" being directly to the right of "Home". "Home" links to **"/"**, and "New" links to **"/new"**. 
+The next unordered list also has two links: "Account" and "Log Out". This list has a bootstrap class ms-auto, whicch sets the margin to the start of the list, functionally setting the elements to the end of the container. This results "Log Out" being at the far right of the navbar, and "Account" being directly to the left of it. "Account" links to **"/account"**, and "Log Out" links to **"/logout"**.  
+
+
+
 ### [account.html](templates/account.html)
 
