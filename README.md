@@ -93,7 +93,69 @@ The rest of the navbar elements determine the rest of the links in the navbar. I
 If there is a session user_id, the first unordered list contains two links: "Home" and "New". This list has bootstrap class me-auto, which sets the margin to the end of the list, functionally setting the elements to the start of the container. This results in "Home" being directly to the right of "ChordScroll" on the far left of the navbar, and "New" being directly to the right of "Home". "Home" links to **"/"**, and "New" links to **"/new"**. 
 The next unordered list also has two links: "Account" and "Log Out". This list has a bootstrap class ms-auto, whicch sets the margin to the start of the list, functionally setting the elements to the end of the container. This results "Log Out" being at the far right of the navbar, and "Account" being directly to the left of it. "Account" links to **"/account"**, and "Log Out" links to **"/logout"**.  
 
+If there isn't a session user, the first unordered list is just the "Home" link, and it directs to **"/login"**. The second unordered list has "Register" which directs to **"/register"** and "Login" which directs to **"/loging"**
 
+After the navbar is some jinja code that sets up to post flashed messages at the top of the page, just below the navbar. 
+
+Finally, the main element is a container, within which is a jinja block. This is where the bulk of the page specific code will go in all the other template pages. 
+
+### [index.html](templates/index.html)
+
+This is the home page of the app. It starts by setting the title to "Home" in the jinja title block. Then it has a table to display all of the songs in the users library. First, above that table is a table with no headers, and 4 columns that each contains an input element. In order, the elements ar id'd as titleFilter, artistFilter, genreFilter, and typeFilter. They all call the filter() function onkeyup. The filter() function, which I pulled from [W3Schools](https://www.w3schools.com/howto/howto_js_filter_table.asp) and modified, is defined at the end of the page. It checks the text input into an input field, and hides any rows in the main songTable that don't match the filter. It takes two arguments: elementId, to identify which input field to pull the text from, and index, to tell it which column in the songTable to compare that text to. 
+I considered also adding sorting functionality to the table, but opted not to due to the complexity. 
+
+After the filter table is the songTable. This table has 6 headers. The first 4 are "Title", "Artist", "Genre", and "Type". The last two are empty. The body of the table displays a row for each song saved to the songs table for the logged in user. It does this using a jinja for loop to loop through each row passed over from [app.py](#apppy) in the _songs_ variable. The first column of each row contains the title. The title is also a link to the **"/song/\<title\>_\<int:id\>"** route in [app.py](#apppy), except that \<title\> and \<int:id\> are populated by song.title and song.id using the jinja for loop. This turns the title into a link the user can click to display the saved song. 
+The second column is the artist name, third column is the genre, and fourth is the type. The fifth column is a button with the text "Edit" that directs the user to **"/song/\<title\>_\<int:id\>\/edit"**, and link with the title link the \<title\> and \<int:id\> fields are populated by the for loop. This button opens the song in the [edit.html](#edithtml) page to allow the user to edit the saved song. Finally, the fifth column is a "Delete" button that allows the user to delete that song by calling the "**"/delete"** route with the value song.id. 
+
+### [new.html](templates/new.html)
+
+This page allows the user to input and save a new song to their library. It sets the title to "New" in the jinja title block. In the main block is a form with several divs. The form has an action that calls **"/new"** from [app.py](#apppy) with a method of post. It also calls the submitForm() function onsubmit. At the bottom of the page, you can see that the submitForm() function sets _content_ equal to the contents of the Quill RTE, then sets the value of hiddenInput equal to contents. This is effectively copying the contents of Quill RTE to a format that can be saved to the database. 
+
+The first div consists of the label "Title" and a text input field. 
+
+The second div has the lable "Artist" and a text input field. 
+
+The third div has label "Genre". It then has a select, with the first option disabled "Genre", and the rest of the options are filled with the rows from the genre table. This is done using a jinja for loop to loop through each row passed from [app.py](#apppy) in _genres_. 
+
+The fourth div is the same as the third, except that instead of "Genre" and the genre table, it's "Type" and the type table. 
+
+The fourth div is the Quill RTE, with the label "Song". I made the decision to use an RTE instead of a textarea element because the RTE allows the user to format the text, which is important when you're saving chords or tabs. 
+
+After that last div, but still in the form, is a save button. 
+
+At the end of the block is a script element. Inside script is the submitForm() function already described, and some code copied from the [Quill](https://quilljs.com/docs/quickstart) website that initializes the Quill editor on the page. 
+
+### [edit.html](templates/edit.html)
+
+This page allows the user to edit an existing saved song. It starts by setting the title to "Edit". Next is a form that is essentially the same as [new.html](#newhtml). The difference is that the action of the form calls route **"/song/{{ song.title }}_{{ song.id }}/edit"**, and each field is pre-populated with the information already in the database for the saved song. 
+At the end of the page is the same script element as [new.html](#newhtml).
+
+### [song.html](templates/song.html)
+
+This is the the most important page of the app. It displays a saved song, and has the auto-scroll functionality that the app is built for. 
+It starts by setting the title of the page equal to the song title, which is populated dynamically using a jinja placeholder. 
+The main block begins with an h1 element with the song title, and h3 element with the artist, and an h6 element with the genre and type. These are all populated using jijna placeholders that pull from the _song_ variable passed from [app.py](#apppy). Next is an "Edit" button and a "Delete" button that are built the same as the edit and delete buttons in [index.html](#indexhtml). 
+
+Below that is a div with the "scroll-buttons" class. That class is styled in [style.css](#stylecss) to make it sticky and on the right side of the screen. This means that as you scroll, this div will stay with you on the right side. The dive is made up of a form and two buttons. The form contains a label "Scroll Speed" and a number input that defaults to 5, and has a minimum value of 1. The first button is "Scroll" and the second button is "Stop". 
+
+Skipping to the script element at the end of the page, we see the javascript that allows the scroll buttons to work. The scroll() function gets the number from the scrollSpeed input. It then uses window.scrollBy() to vertically scroll the number of pixels specified in the scrollSpeed input. Lastly, it sets _globalID_ to requestAnimationFram(scroll). By using an animation frame, it helps the scrolling to be more smooth. 
+
+The stopScroll() function simply cancelse the globalID animation frame. 
+
+Above both of these functions are 3 listeners. The first listens for the scroll button to be clicked, and when it is it calls the scroll() function. The second listener listens for the stop button to be clicked, and when it is it calls the stopScroll() function. The third listener uses the compares the pageYoffest with the scrollHeight - window.innerHeight to listen for when you get to the bottom of the page. When the bottom of the page is reached, it calls the stopScroll() function. 
+
+Jumping back up to the html, just below the scroll buttons is a div with a p element. Inside that p element is jinja placeholder song.song_text | safe. This displays the saved song text with the saved formatting. 
 
 ### [account.html](templates/account.html)
+
+This is a relativelt simple page. It displays the username for the logged in user, and provdes a password reset button to allow them to change their password. To start, it sets the title in the jinja title block to "Account". In the jinja main block, there's a table with two columns. The first header is "Username". and the second header is blank. Then there is one row, and the first column is populated by the logged in users username using a jinja placeholder. The second column is a password reset button that calls the **"/password_reset"** route in [app.py](#apppy).
+
+### [login.html](templates/login.html)
+
+The first page any user sees, this allows registered users to login. It also has a "Forgot Password" button. 
+It starts by setting the title to "Log In" in the jinja title block.
+In the main block, it has two forms. The first has an action that calls the **"/login"** route in [app.py](#apppy) with a method of post. The form has two inputs and a button. The first input is a text field named "username". The second input is a password field named "password". The button is a submit button with text "Log In". 
+
+The second form has an action that calles the **"/forgot_password_u"** route in [app.py](#apppy). It then has a button with the text "Forgot Password". 
+
 
