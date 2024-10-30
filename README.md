@@ -1,5 +1,5 @@
 # ChordScroll
-### Video Demo:
+### Video Demo: https://youtu.be/SE1FmSIF9Ek
 ### Description: 
 A flask web app that let's users save guitar chords or tabs, and then auto scroll at their chosen speed. The purpose is to allow the user to play through a song without having to stop to scroll down. 
 
