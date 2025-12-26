@@ -1,0 +1,15 @@
+html {
+    scroll-behavior: smooth;
+}
+
+.scroll-buttons {
+    position: sticky;
+    top: 100px;
+    width:max-content;
+    margin-left:auto;
+}
+
+#song {
+    max-height: 80vh;
+    overflow-y: auto;
+}

@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {{ song.title }}
+{% endblock %}
+
+{% block main %}
+    <div name="details">
+        <h1>{{ song.title }}</h1>
+        <h3>{{ song.artist }}</h3>
+        <h6>{{ song.genre }} - {{ song.type }}</h6>
+    </div>
+    <form action="/song/{{ song.title }}_{{ song.id }}/edit">
+        <button name="edit" class="btn btn-primary">Edit</button>
+    </form>
+    <form action="/delete" method="post">
+        <input name="id" type="hidden" value="{{ song.id }}">
+        <button name="delete" class="btn btn-primary mt-2">Delete</button>
+    </form>
+    <div class="scroll-buttons">
+        <form class="form-group">
+            <label for="scrollSpeed">Scroll Speed</label>
+            <input class="form-control mx-auto w-auto" id="scrollSpeed" name="scrollSpeed" type="number" step="0.1" min="0.1" value="1">
+        </form>
+        <button type="button" name="scroll" class="btn btn-primary">Scroll</button>
+        <button type="button" name="stop" class="btn btn-primary">Stop</button>
+    </div>
+    <div class="mt-5" name="song" id="song" style="text-align: initial;">
+        <p>{{ song.song_text | safe }}</p>
+    </div>
+
+    <!--Scroll Function-->
+    <script>
+        const song = document.getElementById("song");
+        const speedInput = document.getElementById("scrollSpeed");
+	let globalID = null;
+
+        document.querySelector('button[name="scroll"]').addEventListener("click", startScroll)
+        document.querySelector('button[name="stop"]').addEventListener("click", stopScroll)
+        
+        function startScroll() {
+	    if (globalID !== null) return;
+ 	    globalID = requestAnimationFrame(scroll);
+	}
+
+        function scroll() {
+            const scrollSpeed = parseFloat(speedInput.value) || 1;
+            song.scrollTop += scrollSpeed;
+
+	    if (song.scrollTop + song.clientHeight >= song.scrollHeight) {
+		stopScroll();
+		return;
+	    }
+
+            globalID = requestAnimationFrame(scroll);
+        }
+
+        function stopScroll() {
+	    if (globalID !== null) {
+                cancelAnimationFrame(globalID);
+		globalID = null;
+            }
+        }
+    </script>
+{% endblock %}

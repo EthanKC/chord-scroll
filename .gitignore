@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+chord-scroll-venv/
+
+# Flask sessions
+flask_session/
+
+# SQLite DB (production data)
+chord-scroll.db
+
+# OS junk
+.DS_Store
