@@ -6,7 +6,8 @@ __pycache__/
 chord-scroll-venv/
 
 # Flask sessions
-flask_session/
+flask_session/*
+!flask_session/.gitkeep
 
 # SQLite DB (production data)
 chord-scroll.db

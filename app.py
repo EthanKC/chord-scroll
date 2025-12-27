@@ -1,5 +1,8 @@
 import os
+
 os.environ["TERM"] = "dumb"
+
+
 
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
@@ -30,7 +33,6 @@ Session(app)
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///" + os.path.join(os.path.dirname(__file__), "chord-scroll.db"))
 
-
 @app.after_request
 def after_request(response):
     """Ensure responses aren't cached"""
@@ -47,7 +49,6 @@ def index():
     # Query database for all songs saved by user
     songs = db.execute("SELECT s.title, s.id, s.artist, t.type, g.genre FROM songs s, type t, genre g WHERE s.user_id = ? AND t.id = s.type_id AND g.id = s.genre_id", session["user_id"])
     return render_template("index.html", songs=songs) 
-
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
