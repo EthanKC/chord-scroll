@@ -17,7 +17,15 @@ app = Flask(
 	template_folder=os.path.join(os.path.dirname(__file__), "templates"),
 	static_folder=os.path.join(os.path.dirname(__file__), "static")
  )
-app.secret_key = 'gG45agd2fa2dg45df64saf51adf451'
+
+# Get Flask SECRET_KEY
+SECRET_KEY = os.environ.get('SECRET_KEY')
+
+if not SECRET_KEY:
+	raise ValueError("No SECRET_KEY set for Flask application")
+	
+
+app.config["SECRET_KEY"] = SECRET_KEY
 
 # Configure session to use filestystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
